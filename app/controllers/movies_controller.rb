@@ -11,10 +11,30 @@ class MoviesController < ApplicationController
   end
 
   def index
+    if !params.has_key?(:ratings) && !params.has_key?(:sort) && !params.has_key?(:commit) && (session.has_key?(:ratings) || session.has_key?(:sort)) then
+      newparams = Hash.new
+      if session[:ratings] then
+        newparams[:ratings] = session[:ratings]
+      end
+      if session[:sort] then
+        newparams[:sort] = session[:sort]
+      end
+      flash.keep
+      redirect_to movies_path(newparams)
+    end
     if params[:ratings] then
       @ratings = params[:ratings]
       @select_ratings = params[:ratings].keys
+      session[:ratings] = @ratings
+    else
+      session.delete(:ratings);
     end
+    if params[:sort] then
+      session[:sort] = params[:sort]
+    else
+      session.delete(:sort);
+    end
+
     if params[:sort] == 'title' then
       if @select_ratings != nil then
         @movies = Movie.where(rating: @select_ratings).order('title')
